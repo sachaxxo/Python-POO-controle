@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 
 from models.client import Client
@@ -15,6 +16,11 @@ from data_manager import (
 def pause() -> None:
     """Pause console pour laisser le temps de lire l'affichage."""
     input("\nAppuyez sur Entrée pour continuer...")
+
+
+def nettoyer_terminal() -> None:
+    """Nettoie le terminal (cls sous Windows, clear sous Unix)."""
+    os.system("cls" if os.name == "nt" else "clear")
 
 
 def afficher_menu() -> str:
@@ -236,24 +242,31 @@ def boucle_menu(
     reservations: list[Reservation],
 ) -> None:
     while True:
+        nettoyer_terminal()
         choix = afficher_menu()
 
         if choix == "1":
+            nettoyer_terminal()
             afficher_clients(clients)
             pause()
         elif choix == "2":
+            nettoyer_terminal()
             afficher_vehicules(vehicules)
             pause()
         elif choix == "3":
+            nettoyer_terminal()
             demander_reservation(clients, vehicules, reservations)
             pause()
         elif choix == "4":
+            nettoyer_terminal()
             TarifsManager.afficher_grille()
             pause()
         elif choix == "5":
+            nettoyer_terminal()
             afficher_reservations(reservations)
             pause()
         elif choix == "6":
+            nettoyer_terminal()
             afficher_reservations_client(clients, reservations)
             pause()
         elif choix == "7":
