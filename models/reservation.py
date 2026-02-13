@@ -1,3 +1,6 @@
+from datetime import datetime
+
+
 class Reservation:
     """Représente une réservation entre un client et un véhicule."""
 
@@ -11,7 +14,7 @@ class Reservation:
         forfait_km,
         cout_journalier: float,
         prix_km_supp: float,
-        cout_estime: float,
+        cout_estime: float | None = None,
     ) -> None:
         self.id_reservation = id_reservation
         self.id_client = id_client
@@ -19,9 +22,26 @@ class Reservation:
         self.date_depart = date_depart
         self.date_retour = date_retour
         self.forfait_km = forfait_km
-        self.cout_journalier = cout_journalier
-        self.prix_km_supp = prix_km_supp
-        self.cout_estime = cout_estime
+        self.cout_journalier = float(cout_journalier)
+        self.prix_km_supp = float(prix_km_supp)
+
+        # Calcul automatique demandé (on ignore cout_estime si fourni)
+        self.cout_estime = self._calculer_cout_estime()
+
+    def _calculer_cout_estime(self) -> float:
+        """
+        Calcule automatiquement le coût estimé :
+        - nbjours = différence entre date_depart et date_retour (minimum 1)
+        - cout_estime = cout_journalier * nbjours
+        """
+        d1 = datetime.strptime(self.date_depart, "%Y-%m-%d").date()
+        d2 = datetime.strptime(self.date_retour, "%Y-%m-%d").date()
+
+        nb_jours = (d2 - d1).days
+        if nb_jours < 1:
+            nb_jours = 1
+
+        return self.cout_journalier * nb_jours
 
     def __str__(self) -> str:
         return (
@@ -45,6 +65,7 @@ class Reservation:
 
     @classmethod
     def from_dict(cls, data: dict):
+        # Même si le JSON contient cout_estime, on recalcule automatiquement (étape 11).
         return cls(
             id_reservation=data["id_reservation"],
             id_client=data["id_client"],
@@ -54,5 +75,5 @@ class Reservation:
             forfait_km=data["forfait_km"],
             cout_journalier=float(data["cout_journalier"]),
             prix_km_supp=float(data["prix_km_supp"]),
-            cout_estime=float(data["cout_estime"]),
+            cout_estime=float(data.get("cout_estime", 0.0)),
         )
