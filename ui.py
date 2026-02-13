@@ -3,7 +3,11 @@ from models.vehicule import Vehicule
 from models.reservation import Reservation
 from models.tarifs import TarifsManager
 
-from data_manager import generer_id_reservation, sauvegarder_reservation
+from data_manager import (
+    generer_id_reservation,
+    sauvegarder_reservation,
+    filtrer_reservations_par_client,
+)
 
 
 def afficher_menu() -> str:
@@ -14,8 +18,8 @@ def afficher_menu() -> str:
     print("2. Afficher les véhicules")
     print("3. Créer une réservation")
     print("4. Afficher la grille tarifaire (bientôt)")
-    print("5. Afficher toutes les réservations (bientôt)")
-    print("6. Afficher les réservations d'un client (bientôt)")
+    print("5. Afficher toutes les réservations")
+    print("6. Afficher les réservations d'un client")
     print("7. Quitter")
     print("=" * 60)
     return input("Votre choix : ").strip()
@@ -53,18 +57,48 @@ def _trouver_vehicule(vehicules: list[Vehicule], id_vehicule: str) -> Vehicule |
     return None
 
 
+def afficher_reservations(reservations: list[Reservation]) -> None:
+    print("\n" + "=" * 70)
+    print("LISTE DES RÉSERVATIONS")
+    print("=" * 70)
+    if not reservations:
+        print("Aucune réservation.")
+        print("=" * 70)
+        return
+
+    for r in reservations:
+        print(
+            f"{r.id_reservation} | client {r.id_client} | vehicule {r.id_vehicule} | "
+            f"{r.date_depart} -> {r.date_retour} | forfait {r.forfait_km} | "
+            f"cout estimé {r.cout_estime:.2f}€"
+        )
+    print("=" * 70)
+
+
+def afficher_reservations_client(reservations: list[Reservation], id_client: str) -> None:
+    res_client = filtrer_reservations_par_client(reservations, id_client)
+    print("\n" + "=" * 70)
+    print(f"RÉSERVATIONS DU CLIENT {id_client}")
+    print("=" * 70)
+    if not res_client:
+        print("Aucune réservation pour ce client.")
+        print("=" * 70)
+        return
+
+    for r in res_client:
+        print(
+            f"{r.id_reservation} | vehicule {r.id_vehicule} | "
+            f"{r.date_depart} -> {r.date_retour} | forfait {r.forfait_km} | "
+            f"cout estimé {r.cout_estime:.2f}€"
+        )
+    print("=" * 70)
+
+
 def demander_reservation(
     clients: list[Client],
     vehicules: list[Vehicule],
     reservations: list[Reservation],
 ) -> Reservation | None:
-    """
-    Orchestre la création d'une réservation :
-    - saisies : id_client, id_vehicule, date_depart, date_retour, forfait_km
-    - récupère les tarifs via TarifsManager
-    - construit Reservation + affiche récapitulatif
-    - demande confirmation + sauvegarde dans reservations.json
-    """
     print("\n" + "=" * 60)
     print("CRÉER UNE NOUVELLE RÉSERVATION")
     print("=" * 60)
@@ -95,7 +129,6 @@ def demander_reservation(
     print("Forfaits disponibles : 100, 200, 300, +300")
     forfait_str = input("Forfait kilométrique : ").strip()
 
-    # Normalisation forfait
     if forfait_str in ("100", "200", "300"):
         forfait_km = int(forfait_str)
     elif forfait_str == "+300":
@@ -105,11 +138,8 @@ def demander_reservation(
         return None
 
     cout_journalier, prix_km_supp = TarifsManager.obtenir_tarif(vehicule.cylindree, forfait_km)
-
-    # Génération d'ID
     id_reservation = generer_id_reservation(reservations)
 
-    # Création (cout_estime auto via étape 11)
     reservation = Reservation(
         id_reservation=id_reservation,
         id_client=client.id_client,
@@ -121,7 +151,6 @@ def demander_reservation(
         prix_km_supp=prix_km_supp,
     )
 
-    # Récapitulatif conforme à l'annexe
     print("\n" + "=" * 60)
     print("RÉCAPITULATIF DE LA RÉSERVATION")
     print("=" * 60)
@@ -138,7 +167,7 @@ def demander_reservation(
     rep = input("Sauvegarder cette réservation ? (o/n) : ").strip().lower()
     if rep == "o":
         sauvegarder_reservation(reservation)
-        reservations.append(reservation)  # garde la liste à jour en mémoire
+        reservations.append(reservation)
         print("✓ Réservation sauvegardée dans reservations.json")
         print("✓ Réservation enregistrée avec succès !")
         return reservation
@@ -161,6 +190,11 @@ def boucle_menu(
             afficher_vehicules(vehicules)
         elif choix == "3":
             demander_reservation(clients, vehicules, reservations)
+        elif choix == "5":
+            afficher_reservations(reservations)
+        elif choix == "6":
+            id_client = input("ID du client : ").strip()
+            afficher_reservations_client(reservations, id_client)
         elif choix == "7":
             print("Au revoir !")
             break
