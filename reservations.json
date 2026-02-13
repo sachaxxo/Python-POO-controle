@@ -20,5 +20,16 @@
     "cout_journalier": 45.0,
     "prix_km_supp": 0.3,
     "cout_estime": 90.0
+  },
+  {
+    "id_reservation": "R0003",
+    "id_client": "C004",
+    "id_vehicule": "V005",
+    "date_depart": "2026-05-12",
+    "date_retour": "2026-06-16",
+    "forfait_km": 100,
+    "cout_journalier": 45.0,
+    "prix_km_supp": 0.3,
+    "cout_estime": 1575.0
   }
 ]

@@ -8,6 +8,7 @@ from models.vehicule import Vehicule
 from models.reservation import Reservation
 
 
+# Racine du projet (à côté de main.py / data_manager.py)
 BASE_DIR = Path(__file__).resolve().parent
 
 CLIENTS_FILE = BASE_DIR / "clients.json"
@@ -16,6 +17,7 @@ RESERVATIONS_FILE = BASE_DIR / "reservations.json"
 
 
 def _message_erreur(prefix: str, path: Path, details: str) -> None:
+    """Affiche un message d'erreur lisible (sans crasher)."""
     print(f"✗ {prefix} : {path.name}")
     print(f"  → {details}")
 
@@ -23,16 +25,24 @@ def _message_erreur(prefix: str, path: Path, details: str) -> None:
 def _lire_json(path: Path) -> Any:
     """
     Lit un fichier JSON et renvoie l'objet Python correspondant.
-    En cas d'erreur (fichier manquant, JSON invalide), renvoie [] (par défaut).
+    En cas d'erreur (fichier manquant, JSON invalide), renvoie [].
     """
     try:
         with path.open("r", encoding="utf-8") as f:
             return json.load(f)
     except FileNotFoundError:
-        _message_erreur("Fichier introuvable", path, "Vérifiez qu'il est bien présent à la racine du projet.")
+        _message_erreur(
+            "Fichier introuvable",
+            path,
+            "Vérifiez qu'il est bien présent à la racine du projet.",
+        )
         return []
     except JSONDecodeError as e:
-        _message_erreur("JSON invalide", path, f"Erreur de parsing à la ligne {e.lineno}, colonne {e.colno}.")
+        _message_erreur(
+            "JSON invalide",
+            path,
+            f"Erreur de parsing à la ligne {e.lineno}, colonne {e.colno}.",
+        )
         return []
     except OSError as e:
         _message_erreur("Erreur d'accès au fichier", path, str(e))
@@ -52,6 +62,7 @@ def _ecrire_json(path: Path, data: Any) -> None:
 
 
 def charger_clients(path: Path | str = CLIENTS_FILE) -> list[Client]:
+    """Charge la liste des clients depuis un JSON (clients.json par défaut)."""
     path = Path(path)
     data = _lire_json(path)
 
@@ -69,6 +80,7 @@ def charger_clients(path: Path | str = CLIENTS_FILE) -> list[Client]:
 
 
 def charger_vehicules(path: Path | str = VEHICULES_FILE) -> list[Vehicule]:
+    """Charge la liste des véhicules depuis un JSON (vehicules.json par défaut)."""
     path = Path(path)
     data = _lire_json(path)
 
@@ -86,6 +98,7 @@ def charger_vehicules(path: Path | str = VEHICULES_FILE) -> list[Vehicule]:
 
 
 def charger_reservations(path: Path | str = RESERVATIONS_FILE) -> list[Reservation]:
+    """Charge la liste des réservations depuis un JSON (reservations.json par défaut)."""
     path = Path(path)
     data = _lire_json(path)
 
@@ -103,6 +116,10 @@ def charger_reservations(path: Path | str = RESERVATIONS_FILE) -> list[Reservati
 
 
 def generer_id_reservation(reservations: list[Reservation]) -> str:
+    """
+    Génère un nouvel ID de réservation au format R0001, R0002, ...
+    en se basant sur la liste de réservations existantes.
+    """
     max_num = 0
     for r in reservations:
         try:
@@ -114,6 +131,12 @@ def generer_id_reservation(reservations: list[Reservation]) -> str:
 
 
 def sauvegarder_reservation(reservation: Reservation, path: Path | str = RESERVATIONS_FILE) -> None:
+    """
+    Ajoute une réservation dans reservations.json :
+    - charge les réservations existantes
+    - ajoute la nouvelle
+    - réécrit le fichier
+    """
     path = Path(path)
 
     reservations = charger_reservations(path)
@@ -124,4 +147,5 @@ def sauvegarder_reservation(reservation: Reservation, path: Path | str = RESERVA
 
 
 def filtrer_reservations_par_client(reservations: list[Reservation], id_client: str) -> list[Reservation]:
+    """Retourne les réservations correspondant à un client donné."""
     return [r for r in reservations if r.id_client == id_client]
