@@ -1,0 +1,34 @@
+[
+  {
+    "id_client": "C001",
+    "nom": "Dupont",
+    "prenom": "Jean",
+    "mail": "jean.dupont@email.fr",
+    "telephone": "0612345678",
+    "adresse": "12 rue de la Paix, 75001 Paris"
+  },
+  {
+    "id_client": "C002",
+    "nom": "Martin",
+    "prenom": "Sophie",
+    "mail": "sophie.martin@email.fr",
+    "telephone": "0687654321",
+    "adresse": "45 avenue des Champs, 69000 Lyon"
+  },
+  {
+    "id_client": "C003",
+    "nom": "Dubois",
+    "prenom": "Pierre",
+    "mail": "pierre.dubois@email.fr",
+    "telephone": "0623456789",
+    "adresse": "78 boulevard Victor Hugo, 31000 Toulouse"
+  },
+  {
+    "id_client": "C004",
+    "nom": "Leroy",
+    "prenom": "Marie",
+    "mail": "marie.leroy@email.fr",
+    "telephone": "0698765432",
+    "adresse": "33 rue du Commerce, 44000 Nantes"
+  }
+]

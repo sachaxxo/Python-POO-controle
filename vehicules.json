@@ -1,0 +1,42 @@
+[
+  {
+    "id_vehicule": "V001",
+    "marque": "Renault",
+    "modele": "Clio",
+    "cylindree": 4,
+    "kilometrage_actuel": 45000,
+    "date_mise_en_circulation": "2020-05-15"
+  },
+  {
+    "id_vehicule": "V002",
+    "marque": "Peugeot",
+    "modele": "308",
+    "cylindree": 5,
+    "kilometrage_actuel": 32000,
+    "date_mise_en_circulation": "2021-03-20"
+  },
+  {
+    "id_vehicule": "V003",
+    "marque": "Citroën",
+    "modele": "C3",
+    "cylindree": 4,
+    "kilometrage_actuel": 28000,
+    "date_mise_en_circulation": "2022-01-10"
+  },
+  {
+    "id_vehicule": "V004",
+    "marque": "BMW",
+    "modele": "Série 3",
+    "cylindree": 6,
+    "kilometrage_actuel": 18000,
+    "date_mise_en_circulation": "2023-06-01"
+  },
+  {
+    "id_vehicule": "V005",
+    "marque": "Volkswagen",
+    "modele": "Golf",
+    "cylindree": 5,
+    "kilometrage_actuel": 52000,
+    "date_mise_en_circulation": "2019-11-25"
+  }
+]
