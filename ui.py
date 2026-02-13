@@ -17,7 +17,7 @@ def afficher_menu() -> str:
     print("1. Afficher les clients")
     print("2. Afficher les véhicules")
     print("3. Créer une réservation")
-    print("4. Afficher la grille tarifaire (bientôt)")
+    print("4. Afficher la grille tarifaire")
     print("5. Afficher toutes les réservations")
     print("6. Afficher les réservations d'un client")
     print("7. Quitter")
@@ -190,6 +190,8 @@ def boucle_menu(
             afficher_vehicules(vehicules)
         elif choix == "3":
             demander_reservation(clients, vehicules, reservations)
+        elif choix == "4":
+            TarifsManager.afficher_grille()
         elif choix == "5":
             afficher_reservations(reservations)
         elif choix == "6":
