@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from models.client import Client
 from models.vehicule import Vehicule
 from models.reservation import Reservation
@@ -57,6 +59,23 @@ def _trouver_vehicule(vehicules: list[Vehicule], id_vehicule: str) -> Vehicule |
     return None
 
 
+def _parse_date(date_str: str):
+    """Retourne une date (datetime.date) ou None si format invalide."""
+    try:
+        return datetime.strptime(date_str, "%Y-%m-%d").date()
+    except ValueError:
+        return None
+
+
+def _normaliser_forfait(forfait_str: str):
+    """Retourne 100/200/300 (int) ou '+300' (str) ou None si invalide."""
+    if forfait_str in ("100", "200", "300"):
+        return int(forfait_str)
+    if forfait_str == "+300":
+        return "+300"
+    return None
+
+
 def afficher_reservations(reservations: list[Reservation]) -> None:
     print("\n" + "=" * 70)
     print("LISTE DES RÉSERVATIONS")
@@ -68,18 +87,24 @@ def afficher_reservations(reservations: list[Reservation]) -> None:
 
     for r in reservations:
         print(
-            f"{r.id_reservation} | client {r.id_client} | vehicule {r.id_vehicule} | "
-            f"{r.date_depart} -> {r.date_retour} | forfait {r.forfait_km} | "
-            f"cout estimé {r.cout_estime:.2f}€"
+            f"{r.id_reservation} | Client: {r.id_client} | Véhicule: {r.id_vehicule} | "
+            f"{r.date_depart} ➔ {r.date_retour} | Forfait: {r.forfait_km} km | Coût estimé: {r.cout_estime:.2f}€"
         )
     print("=" * 70)
 
 
-def afficher_reservations_client(reservations: list[Reservation], id_client: str) -> None:
+def afficher_reservations_client(clients: list[Client], reservations: list[Reservation]) -> None:
+    id_client = input("ID du client à rechercher : ").strip()
+
+    if _trouver_client(clients, id_client) is None:
+        print("✗ ID client inexistant.")
+        return
+
     res_client = filtrer_reservations_par_client(reservations, id_client)
     print("\n" + "=" * 70)
     print(f"RÉSERVATIONS DU CLIENT {id_client}")
     print("=" * 70)
+
     if not res_client:
         print("Aucune réservation pour ce client.")
         print("=" * 70)
@@ -87,9 +112,8 @@ def afficher_reservations_client(reservations: list[Reservation], id_client: str
 
     for r in res_client:
         print(
-            f"{r.id_reservation} | vehicule {r.id_vehicule} | "
-            f"{r.date_depart} -> {r.date_retour} | forfait {r.forfait_km} | "
-            f"cout estimé {r.cout_estime:.2f}€"
+            f"{r.id_reservation} | Véhicule: {r.id_vehicule} | "
+            f"{r.date_depart} ➔ {r.date_retour} | Forfait: {r.forfait_km} km | Coût estimé: {r.cout_estime:.2f}€"
         )
     print("=" * 70)
 
@@ -110,7 +134,7 @@ def demander_reservation(
 
     client = _trouver_client(clients, id_client)
     if client is None:
-        print("✗ ID client introuvable.")
+        print("✗ ID client inexistant.")
         return None
 
     print("Véhicules disponibles :")
@@ -120,32 +144,48 @@ def demander_reservation(
 
     vehicule = _trouver_vehicule(vehicules, id_vehicule)
     if vehicule is None:
-        print("✗ ID véhicule introuvable.")
+        print("✗ ID véhicule inexistant.")
         return None
 
-    date_depart = input("Date de départ (AAAA-MM-JJ) : ").strip()
-    date_retour = input("Date de retour (AAAA-MM-JJ) : ").strip()
+    date_depart_str = input("Date de départ (AAAA-MM-JJ) : ").strip()
+    date_retour_str = input("Date de retour (AAAA-MM-JJ) : ").strip()
+
+    d_depart = _parse_date(date_depart_str)
+    d_retour = _parse_date(date_retour_str)
+
+    if d_depart is None:
+        print("✗ Date de départ invalide (format attendu : AAAA-MM-JJ).")
+        return None
+    if d_retour is None:
+        print("✗ Date de retour invalide (format attendu : AAAA-MM-JJ).")
+        return None
+
+    if d_retour < d_depart:
+        print("✗ Dates incohérentes : la date de retour est avant la date de départ.")
+        return None
 
     print("Forfaits disponibles : 100, 200, 300, +300")
     forfait_str = input("Forfait kilométrique : ").strip()
+    forfait_km = _normaliser_forfait(forfait_str)
 
-    if forfait_str in ("100", "200", "300"):
-        forfait_km = int(forfait_str)
-    elif forfait_str == "+300":
-        forfait_km = "+300"
-    else:
-        print("✗ Forfait invalide.")
+    if forfait_km is None:
+        print("✗ Forfait kilométrique invalide (attendu : 100, 200, 300 ou +300).")
         return None
 
-    cout_journalier, prix_km_supp = TarifsManager.obtenir_tarif(vehicule.cylindree, forfait_km)
+    try:
+        cout_journalier, prix_km_supp = TarifsManager.obtenir_tarif(vehicule.cylindree, forfait_km)
+    except ValueError as e:
+        print(f"✗ Tarifs introuvables : {e}")
+        return None
+
     id_reservation = generer_id_reservation(reservations)
 
     reservation = Reservation(
         id_reservation=id_reservation,
         id_client=client.id_client,
         id_vehicule=vehicule.id_vehicule,
-        date_depart=date_depart,
-        date_retour=date_retour,
+        date_depart=date_depart_str,
+        date_retour=date_retour_str,
         forfait_km=forfait_km,
         cout_journalier=cout_journalier,
         prix_km_supp=prix_km_supp,
@@ -165,6 +205,10 @@ def demander_reservation(
     print("=" * 60)
 
     rep = input("Sauvegarder cette réservation ? (o/n) : ").strip().lower()
+    if rep not in ("o", "n"):
+        print("✗ Réponse invalide (attendu : o ou n). Réservation annulée.")
+        return None
+
     if rep == "o":
         sauvegarder_reservation(reservation)
         reservations.append(reservation)
@@ -195,10 +239,9 @@ def boucle_menu(
         elif choix == "5":
             afficher_reservations(reservations)
         elif choix == "6":
-            id_client = input("ID du client : ").strip()
-            afficher_reservations_client(reservations, id_client)
+            afficher_reservations_client(clients, reservations)
         elif choix == "7":
             print("Au revoir !")
             break
         else:
-            print("Choix invalide ou fonctionnalité pas encore implémentée.")
+            print("Choix invalide, réessayez.")
