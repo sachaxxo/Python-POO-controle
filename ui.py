@@ -12,6 +12,11 @@ from data_manager import (
 )
 
 
+def pause() -> None:
+    """Pause console pour laisser le temps de lire l'affichage."""
+    input("\nAppuyez sur Entrée pour continuer...")
+
+
 def afficher_menu() -> str:
     print("\n" + "=" * 60)
     print("SYSTÈME DE LOCATION DE VÉHICULES")
@@ -41,7 +46,10 @@ def afficher_vehicules(vehicules: list[Vehicule]) -> None:
     print("LISTE DES VÉHICULES")
     print("=" * 60)
     for v in vehicules:
-        print(f"{v.id_vehicule} - {v.marque} {v.modele} ({v.cylindree} cyl., {int(v.kilometrage_actuel)} km)")
+        print(
+            f"{v.id_vehicule} - {v.marque} {v.modele} "
+            f"({v.cylindree} cyl., {int(v.kilometrage_actuel)} km)"
+        )
     print("=" * 60)
 
 
@@ -88,7 +96,8 @@ def afficher_reservations(reservations: list[Reservation]) -> None:
     for r in reservations:
         print(
             f"{r.id_reservation} | Client: {r.id_client} | Véhicule: {r.id_vehicule} | "
-            f"{r.date_depart} ➔ {r.date_retour} | Forfait: {r.forfait_km} km | Coût estimé: {r.cout_estime:.2f}€"
+            f"{r.date_depart} ➔ {r.date_retour} | Forfait: {r.forfait_km} km | "
+            f"Coût estimé: {r.cout_estime:.2f}€"
         )
     print("=" * 70)
 
@@ -113,7 +122,8 @@ def afficher_reservations_client(clients: list[Client], reservations: list[Reser
     for r in res_client:
         print(
             f"{r.id_reservation} | Véhicule: {r.id_vehicule} | "
-            f"{r.date_depart} ➔ {r.date_retour} | Forfait: {r.forfait_km} km | Coût estimé: {r.cout_estime:.2f}€"
+            f"{r.date_depart} ➔ {r.date_retour} | Forfait: {r.forfait_km} km | "
+            f"Coût estimé: {r.cout_estime:.2f}€"
         )
     print("=" * 70)
 
@@ -230,18 +240,25 @@ def boucle_menu(
 
         if choix == "1":
             afficher_clients(clients)
+            pause()
         elif choix == "2":
             afficher_vehicules(vehicules)
+            pause()
         elif choix == "3":
             demander_reservation(clients, vehicules, reservations)
+            pause()
         elif choix == "4":
             TarifsManager.afficher_grille()
+            pause()
         elif choix == "5":
             afficher_reservations(reservations)
+            pause()
         elif choix == "6":
             afficher_reservations_client(clients, reservations)
+            pause()
         elif choix == "7":
             print("Au revoir !")
             break
         else:
             print("Choix invalide, réessayez.")
+            pause()
